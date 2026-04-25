@@ -1,8 +1,13 @@
 from flask import Flask, request, jsonify
-from model import IrisClassifier
 import pandas as pd
 import numpy as np
 import os
+import sys
+
+# Add current directory to Python path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from model import IrisClassifier
 
 app = Flask(__name__)
 
