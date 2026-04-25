@@ -1,0 +1,88 @@
+name: Deploy to Docker Desktop with Terraform
+
+on:
+  repository_dispatch:
+    types: [deploy-to-docker-desktop]
+  workflow_dispatch:
+    inputs:
+      docker_image:
+        description: 'Docker image to deploy'
+        required: false
+        default: 'your-username/ml-iris-classifier:latest'
+
+jobs:
+  deploy:
+    runs-on: windows-latest
+    if: github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.5.0"
+
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ./terraform
+
+    - name: Terraform Plan
+      run: |
+        $image = "${{ github.event.client_payload.image }}"
+        if (-not $image) {
+          $image = "${{ github.event.inputs.docker_image }}"
+        }
+        terraform plan -var="docker_image=$image" -out=tfplan
+      working-directory: ./terraform
+      shell: powershell
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve tfplan
+      working-directory: ./terraform
+
+    - name: Get Container Status
+      run: terraform output -json
+      working-directory: ./terraform
+
+    - name: Test API Health
+      run: |
+        $serviceUrl = terraform output -raw service_url
+        $healthUrl = "$serviceUrl/health"
+        Write-Host "Testing API at: $healthUrl"
+        
+        $maxAttempts = 10
+        $attempt = 0
+        $success = $false
+        
+        while ($attempt -lt $maxAttempts -and -not $success) {
+          try {
+            $response = Invoke-RestMethod -Uri $healthUrl -Method Get -TimeoutSec 10
+            Write-Host "API Health Check Passed: $($response | ConvertTo-Json)"
+            $success = $true
+          } catch {
+            $attempt++
+            Write-Host "Attempt $attempt failed. Retrying in 30 seconds..."
+            Start-Sleep -Seconds 30
+          }
+        }
+        
+        if (-not $success) {
+          Write-Error "API Health Check failed after $maxAttempts attempts"
+          exit 1
+        }
+      working-directory: ./terraform
+      shell: powershell
+
+    - name: Display Service Information
+      run: |
+        Write-Host "=== ML Classification Service Information ===" -ForegroundColor Green
+        terraform output
+        Write-Host ""
+        Write-Host "API Endpoints:" -ForegroundColor Yellow
+        Write-Host "  Health Check: $(terraform output -raw health_check_url)"
+        Write-Host "  API Info: $(terraform output -raw api_info_url)"
+        Write-Host "  Predictions: $(terraform output -raw service_url)/predict (POST)"
+      working-directory: ./terraform
+      shell: powershell
