@@ -71,10 +71,23 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-    - name: Trigger Terraform deployment
+    - name: Deploy to Docker Desktop
       if: github.ref == 'refs/heads/main'
-      uses: peter-evans/repository-dispatch@v2
+      uses: hashicorp/setup-terraform@v3
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        event-type: deploy-to-docker-desktop
-        client-payload: '{"image": "${{ env.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest"}'
+        terraform_version: "1.5.0"
+
+    - name: Terraform Init
+      if: github.ref == 'refs/heads/main'
+      run: terraform init
+      working-directory: ./terraform
+
+    - name: Terraform Plan
+      if: github.ref == 'refs/heads/main'
+      run: terraform plan -var="docker_image=${{ env.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest" -out=tfplan
+      working-directory: ./terraform
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main'
+      run: terraform apply -auto-approve tfplan
+      working-directory: ./terraform
