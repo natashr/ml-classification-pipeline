@@ -21,6 +21,7 @@ variable "container_name" {
 variable "container_port" {
   description = "Port to expose the container"
   type        = number
+  default     = 5001
   
   validation {
     condition     = var.container_port >= 1 && var.container_port <= 65535
@@ -31,6 +32,7 @@ variable "container_port" {
 variable "host_port" {
   description = "Port on the host to map to container"
   type        = number
+  default     = 5001
   
   validation {
     condition     = var.host_port >= 1 && var.host_port <= 65535

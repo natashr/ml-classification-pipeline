@@ -55,20 +55,20 @@ cd ml-classification-pipeline
 docker build -t ml-iris-classifier .
 
 # Run the container
-docker run -p 5000:5000 --name ml-classifier ml-iris-classifier
+docker run -p 5001:5001 --name ml-classifier ml-iris-classifier
 ```
 
 ### 3. Test the API
 
 ```bash
 # Health check
-curl http://localhost:5000/health
+curl http://localhost:5001/health
 
 # Model info
-curl http://localhost:5000/info
+curl http://localhost:5001/info
 
 # Make a prediction
-curl -X POST http://localhost:5000/predict \
+curl -X POST http://localhost:5001/predict \
   -H "Content-Type: application/json" \
   -d '{
     "features": [5.1, 3.5, 1.4, 0.2]
@@ -182,10 +182,10 @@ python -c "from app.api import app; print('API test passed')"
 
 ```bash
 # Check service health
-curl http://localhost:5000/health
+curl http://localhost:5001/health
 
 # Test prediction
-curl -X POST http://localhost:5000/predict \
+curl -X POST http://localhost:5001/predict \
   -H "Content-Type: application/json" \
   -d '{"features": [6.0, 3.0, 4.8, 1.8]}'
 ```
