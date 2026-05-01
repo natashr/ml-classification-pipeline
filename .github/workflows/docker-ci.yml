@@ -71,23 +71,12 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-    - name: Deploy to Docker Desktop
+    - name: Deployment Instructions
       if: github.ref == 'refs/heads/main'
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: "1.5.0"
-
-    - name: Terraform Init
-      if: github.ref == 'refs/heads/main'
-      run: terraform init
-      working-directory: ./terraform
-
-    - name: Terraform Plan
-      if: github.ref == 'refs/heads/main'
-      run: terraform plan -var="docker_image=${{ env.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest" -out=tfplan
-      working-directory: ./terraform
-
-    - name: Terraform Apply
-      if: github.ref == 'refs/heads/main'
-      run: terraform apply -auto-approve tfplan
-      working-directory: ./terraform
+      run: |
+        echo "🐳 Docker image built and pushed successfully!"
+        echo "🚀 To deploy locally, run:"
+        echo "   cd terraform"
+        echo "   terraform init"
+        echo "   terraform plan -var=\"docker_image=${{ env.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest\""
+        echo "   terraform apply -var=\"docker_image=${{ env.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest\" -auto-approve"
