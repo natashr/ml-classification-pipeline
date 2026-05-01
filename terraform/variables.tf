@@ -11,6 +11,7 @@ variable "docker_image" {
 variable "container_name" {
   description = "Name of the Docker container"
   type        = string
+  default     = "ml-iris-classifier"
   
   validation {
     condition     = can(regex("^[a-z0-9-]+$", var.container_name))
