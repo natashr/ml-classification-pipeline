@@ -8,15 +8,6 @@ output "container_name" {
   value       = docker_container.ml_classifier.name
 }
 
-output "container_status" {
-  description = "The status of the created container"
-  value       = docker_container.ml_classifier.status
-}
-
-output "container_ip" {
-  description = "The IP address of the container"
-  value       = docker_container.ml_classifier.ip_address
-}
 
 output "service_url" {
   description = "URL to access the ML service"
